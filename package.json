@@ -1,0 +1,19 @@
+{
+  "name": "vently-api",
+  "version": "1.0.0",
+  "description": "Api used for the vently mobile app",
+  "main": "app.js",
+  "scripts": {
+    "start": "app.js"
+  },
+  "author": "Julius Kiano",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "mongoose": "^4.10.4"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}
