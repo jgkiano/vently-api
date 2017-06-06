@@ -25,6 +25,10 @@ const userSchema = new Schema({
         type: Number,
         required: true
     },
+    gender: {
+        type: String,
+        required: true
+    },
     isDeleted: {
         type: Boolean,
         default: false

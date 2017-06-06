@@ -1,14 +1,9 @@
-const express = require('express');
-
-const routes = express();
-
-//controller imports
-const userController = require('../controllers/userController');
+const express       = require('express');
+const routes        = express();
 
 //user routes
-routes.post('/user/register', userController.register);
-routes.get('/users', userController.getAll);
-routes.post('/users/killswitch', userController.deleteAll);
+const usersRoute    = require('./users');
+routes.use('/users', usersRoute);
 
 
 module.exports = routes;
