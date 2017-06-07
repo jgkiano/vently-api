@@ -1,4 +1,5 @@
 const Interest = require('../models/interest');
+const ErrorMsgs = require('../error-msgs/interests');
 
 const interestController = {};
 
@@ -11,7 +12,7 @@ interestController.getAll = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: error.toString()
+            message: ErrorMsgs.catchError
         });
     });
 }
@@ -27,7 +28,7 @@ interestController.addSingle = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: error.toString()
+            message: ErrorMsgs.catchError
         });
     });
 }

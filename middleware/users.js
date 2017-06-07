@@ -1,12 +1,13 @@
-const User = require('../models/user');
-const Interest = require('../models/interest');
-const Middleware = {};
+const User          = require('../models/user');
+const Interest      = require('../models/interest');
+const ErrorMsgs     = require('../error-msgs/users');
+const Middleware    = {};
 
 Middleware.validateRegistration = (req, res, next) => {
     const email     = req.body.email;
     const password  = req.body.password;
     const firstname = req.body.firstname;
-    const lastname  = req.body.lastname
+    const lastname  = req.body.lastname;
     const phone     = req.body.phone;
     const gender    = req.body.gender;
     let interests   = req.body.interests;
@@ -14,37 +15,41 @@ Middleware.validateRegistration = (req, res, next) => {
 
     if (!validateEmail(email)) {
         errors.push({
-            email: 'wrong email pattern'
+            email: ErrorMsgs.emailPattern
         });
     }
 
     if (!validatePassword(password)) {
         errors.push({
-            password: 'password is too weak. Must be a minimum of 8 characters at least 1 Alphabet and 1 Number'
+            password: ErrorMsgs.weakPassword
         });
     }
 
     if (!firstname) {
         errors.push({
-            firstname: 'firstname is required'
+            firstname: ErrorMsgs.firstnameReq
         });
+    } else {
+        req.body.firstname = toTitleCase(req.body.firstname)
     }
 
     if (!lastname) {
         errors.push({
-            lastname: 'lastname is required'
+            lastname: ErrorMsgs.lastnameReq
         });
+    } else {
+        req.body.lastname = toTitleCase(req.body.lastname)
     }
 
     if (!validatePhone(phone)) {
         errors.push({
-            phone: 'wrong phone pattern. Must be 722xxx356 format'
+            phone: ErrorMsgs.phonePattern
         });
     }
 
     if(!validateGender(gender)) {
         errors.push({
-            gender: 'gender is invalid.'
+            gender: ErrorMsgs.genderInvalid
         });
     }
 
@@ -55,12 +60,12 @@ Middleware.validateRegistration = (req, res, next) => {
     if ( interests.constructor == Array ) {
         if(!isValidObjectId(interests)) {
             errors.push({
-                interests: 'provide an array of valid interests. Refer to docs'
+                interests: ErrorMsgs.interestsInvalid
             });
         }
     } else {
         errors.push({
-            interests: 'provide an array of valid interests. Refer to docs'
+            interests: ErrorMsgs.interestsInvalid
         });
     }
 
@@ -74,7 +79,7 @@ Middleware.validateRegistration = (req, res, next) => {
     User.findOne({ $or: [{ email }, {phone} ] }).then((user) => {
         if (user) {
             res.status(500).json({
-                message: 'user is already registered'
+                message: ErrorMsgs.userExists
             });
             return;
         }
@@ -87,7 +92,7 @@ Middleware.validateRegistration = (req, res, next) => {
             Interest.find({ $or: interests}).then((_interests) => {
                 if(interests.length !== _interests.length) {
                     res.status(500).json({
-                        message: 'invalid interests array. Check interests ids'
+                        message: ErrorMsgs.interestsArrayInvalid
                     });
                     return;
                 }
@@ -95,7 +100,7 @@ Middleware.validateRegistration = (req, res, next) => {
             })
             .catch((error) => {
                 res.status(500).json({
-                    message: error.toString()
+                    message: ErrorMsgs.catchError
                 });
             });
         } else {
@@ -104,7 +109,7 @@ Middleware.validateRegistration = (req, res, next) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: error.toString()
+            message: ErrorMsgs.catchError
         });
     });
 }
@@ -115,12 +120,12 @@ Middleware.validateBasicInfo = (req, res, next) => {
     const errors    = [];
     if (!firstname) {
         errors.push({
-            firstname: 'firstname is required'
+            firstname: ErrorMsgs.firstnameReq
         });
     }
     if (!lastname) {
         errors.push({
-            lastname: 'lastname is required'
+            lastname: ErrorMsgs.lastnameReq
         });
     }
     if(errors.length > 0) {
@@ -136,13 +141,13 @@ Middleware.validateEmail = (req, res, next) => {
     const email = req.body.email;
     if(!validateEmail(email)) {
         res.status(500).json({
-            message: 'wrong email pattern'
+            message: ErrorMsgs.emailPattern
         });
     } else {
         User.findOne({ email }).then((user) => {
             if (user) {
                 res.status(500).json({
-                    message: 'email address is already registered'
+                    message: ErrorMsgs.userExists
                 });
             } else {
                 next();
@@ -160,13 +165,13 @@ Middleware.validatePhone = (req, res, next) => {
     const phone = req.body.phone;
     if(!validatePhone(phone)) {
         res.status(500).json({
-            message: 'wrong phone pattern. Must be 722xxx356 format'
+            message: ErrorMsgs.phonePattern
         });
     } else {
         User.findOne({ phone }).then((user) => {
             if (user) {
                 res.status(500).json({
-                    message: 'phone number is already registered'
+                    message: ErrorMsgs.phoneExists
                 });
             } else {
                 next();
@@ -184,7 +189,7 @@ Middleware.validatePassword = (req, res, next) => {
     const password = req.body.password;
     if(!validatePassword(password)) {
         res.status(500).json({
-            message: 'password is too weak. Must be a minimum of 8 characters at least 1 Alphabet and 1 Number'
+            message: ErrorMsgs.weakPassword
         });
     } else {
         next();
@@ -196,13 +201,13 @@ Middleware.validateAuthentication = (req, res, next) => {
     const password = req.body.password;
     if(!validateEmail(email)) {
         res.status(500).json({
-            message: 'invalid email and/or password'
+            message: ErrorMsgs.authFail
         });
         return;
     }
     if(!validatePassword(password)) {
         res.status(500).json({
-            message: 'invalid email and/or password'
+            message: ErrorMsgs.authFail
         });
         return;
     }
@@ -237,6 +242,10 @@ function isValidObjectId(array) {
         }
     }
     return true;
+}
+
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
 module.exports = Middleware;

@@ -2,6 +2,7 @@ const jwt           = require('jsonwebtoken');
 const crypt         = require('bcryptjs');
 const config        = require('../config/database');
 const User          = require('../models/user');
+const ErrorMsgs     = require('../error-msgs/users');
 
 const userController = {};
 
@@ -15,7 +16,7 @@ userController.getAll = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: error.toString()
+            message: ErrorMsgs.catchError
         });
     });
 }
@@ -36,13 +37,13 @@ userController.getSingle = (req, res) => {
             });
         } else {
             res.status(500).json({
-                message: 'user not found'
+                message: ErrorMsgs.userNotFound
             });
         }
     })
     .catch((error) => {
         res.status(500).json({
-            message: 'user not found. ID does not match system pattern'
+            message: ErrorMsgs.userNotFound
         });
     });
 }
@@ -61,7 +62,7 @@ userController.addSingle = (req, res) => {
         crypt.hash(password, salt, (error, hash) => {
             if(error) {
                 res.status(500).json({
-                    message: 'error on creating user'
+                    message: ErrorMsgs.createFail
                 });
             } else {
                 const user = new User({
@@ -108,7 +109,7 @@ userController.updateSingle = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: 'User update failed. Check docs for more info'
+            message: ErrorMsgs.updateFail
         });
     });
 }
@@ -124,7 +125,7 @@ userController.updateSingleEmail = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: 'User update failed. Check docs for more info'
+            message: ErrorMsgs.updateFail
         });
     });
 }
@@ -140,7 +141,7 @@ userController.updateSinglePhone = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: 'User update failed. Check docs for more info'
+            message: ErrorMsgs.updateFail
         });
     });
 }
@@ -152,7 +153,7 @@ userController.updateSinglePassword = (req, res) => {
         crypt.hash(password, salt, (error, hash) => {
             if(error) {
                 res.status(500).json({
-                    message: 'error on creating user'
+                    message: ErrorMsgs.updateFail
                 });
             } else {
                 User.findByIdAndUpdate(req.user._id, { password:hash }, {new: true}).then((user) => {
@@ -163,7 +164,7 @@ userController.updateSinglePassword = (req, res) => {
                 })
                 .catch((error) => {
                     res.status(500).json({
-                        message: 'User update failed. Check docs for more info'
+                        message: ErrorMsgs.updateFail
                     });
                 });
             }
@@ -180,7 +181,7 @@ userController.deleteSingle = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: 'User delete failed. Check docs for more info'
+            message: ErrorMsgs.deleteFail
         });
     });
 }
@@ -196,7 +197,7 @@ userController.deleteAll = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: error.toString()
+            message: "error on killswitch"
         });
     });
 };
@@ -209,7 +210,7 @@ userController.authenticateSingle = (req, res) => {
         //no user found
         if(!user) {
             res.status(500).json({
-                message: 'Incorrect username and/or password'
+                message: ErrorMsgs.authFail
             });
             return;
         }
@@ -217,14 +218,14 @@ userController.authenticateSingle = (req, res) => {
             //error in crypt compare
             if (error) {
                 res.status(500).json({
-                    message: 'failed to authenticate user'
+                    message: ErrorMsgs.loginFail
                 });
                 return;
             }
             //passwords don't match
             if(!isMatch) {
                 res.status(500).json({
-                    message: 'Incorrect username and/or password'
+                    message: ErrorMsgs.authFail
                 });
                 return;
             }
@@ -242,7 +243,7 @@ userController.authenticateSingle = (req, res) => {
     })
     .catch((error) => {
         res.status(500).json({
-            message: 'failed to authenticate user'
+            message: ErrorMsgs.loginFail
         });
     });
 }
