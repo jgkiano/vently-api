@@ -6,7 +6,7 @@
 node_modules/
 
 #error-msgs
-error-msgs
+error-msgs/
 
 #config folder
 config/
