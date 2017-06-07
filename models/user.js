@@ -36,7 +36,8 @@ const userSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    interests: [{ type : mongoose.Schema.Types.ObjectId, ref: 'Interest' }]
 });
 const User = mongoose.model('User', userSchema);
 module.exports = User;

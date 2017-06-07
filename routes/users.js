@@ -1,37 +1,41 @@
 const express = require('express');
+const passport = require('passport');
 const routes = express();
 
-//middleware imports
+// middleware imports
 const Middleware = require('../middleware/users');
 
-//controller imports
+// controller imports
 const userController = require('../controllers/userController');
 
-//get all users
-routes.get('/', userController.getAll);
+// get all users - temporary
+routes.get('/all', userController.getAll);
 
-//register a single user
+// get single user info
+routes.get('/', passport.authenticate('jwt',{session: false}), userController.getSingle);
+
+// register a single user
 routes.post('/', Middleware.validateRegistration, userController.addSingle);
 
-//get single user info
-routes.get('/:id', userController.getSingle);
+// authenticate a single user
+routes.post('/authenticate', Middleware.validateAuthentication, userController.authenticateSingle);
 
-//update only firstname and lastname
-routes.put('/:id', Middleware.validateBasicInfo, userController.updateSingle);
+// update only firstname and lastname
+routes.put('/', passport.authenticate('jwt',{session: false}), Middleware.validateBasicInfo, userController.updateSingle);
 
 // update only email
-routes.put('/:id/email',  Middleware.validateEmail, userController.updateSingleEmail);
+routes.put('/email', passport.authenticate('jwt',{session: false}), Middleware.validateEmail, userController.updateSingleEmail);
 
 // update only phone
-routes.put('/:id/phone',  Middleware.validatePhone, userController.updateSinglePhone);
+routes.put('/phone', passport.authenticate('jwt',{session: false}), Middleware.validatePhone, userController.updateSinglePhone);
 
 // update only password
-routes.put('/:id/pass', Middleware.validatePassword,  userController.updateSinglePassword);
+routes.put('/pass', passport.authenticate('jwt',{session: false}), Middleware.validatePassword,  userController.updateSinglePassword);
 
 // soft delete single user
-routes.delete('/:id', userController.deleteSingle);
+routes.delete('/', passport.authenticate('jwt',{session: false}), userController.deleteSingle);
 
 // temporary killswitch route for all users - with great power comes great responsibility
-routes.delete('/', userController.deleteAll);
+routes.delete('/all', userController.deleteAll);
 
 module.exports = routes;

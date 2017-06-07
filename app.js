@@ -1,6 +1,7 @@
 const express       = require('express');
 const bodyParser    = require('body-parser');
 const mongoose      = require('mongoose');
+const passport      = require('passport');
 const config        = require('./config/database');
 const routes        = require('./routes');
 
@@ -21,6 +22,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+
+//passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+require('./config/passport')(passport);
+
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        res.status(500).json({
+            message: 'Invalid JSON format'
+        });
+    }
+});
 
 //default route
 app.get('/', (req, res) => {
