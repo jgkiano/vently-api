@@ -5,5 +5,8 @@
 #node
 node_modules/
 
+#error-msgs
+error-msgs
+
 #config folder
 config/
