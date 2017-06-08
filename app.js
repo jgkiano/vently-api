@@ -29,7 +29,6 @@ app.use(passport.session());
 require('./config/passport')(passport);
 
 app.use((err, req, res, next) => {
-    console.log(err)
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
         res.status(500).json({
             message: 'Invalid JSON format'

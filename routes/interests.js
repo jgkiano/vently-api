@@ -9,6 +9,19 @@ const interestController = require('../controllers/interestController');
 // get all users - temporary
 routes.get('/', interestController.getAll);
 
-routes.post('/', Middleware.validateNewInterest, interestController.addSingle);
+//get single interest
+routes.get('/:id', interestController.getSingle);
+
+//update single interest
+routes.put('/:id', Middleware.validateInterest, interestController.updateSingle);
+
+//add single interest
+routes.post('/', Middleware.validateInterest, interestController.addSingle);
+
+//soft delete single interest
+routes.delete('/:id', interestController.deleteSingle);
+
+//temporary kill switch
+routes.delete('/', interestController.deleteAll);
 
 module.exports = routes;

@@ -2,7 +2,7 @@ const Interest      = require('../models/interest');
 const ErrorMsgs     = require('../error-msgs/interests')
 const Middleware    = {};
 
-Middleware.validateNewInterest = (req, res, next) => {
+Middleware.validateInterest = (req, res, next) => {
     if(!req.body.name) {
         res.status(500).json({
             message: ErrorMsgs.nameReq
