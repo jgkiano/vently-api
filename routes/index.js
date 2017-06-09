@@ -9,4 +9,8 @@ routes.use('/users', usersRoute);
 const interestsRoute    = require('./interests');
 routes.use('/interests', interestsRoute);
 
+//events routes
+const eventsRoute    = require('./events');
+routes.use('/events', eventsRoute);
+
 module.exports = routes;

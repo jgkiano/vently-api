@@ -1,7 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const routes = express();
-const Middleware = require('../middleware/interests')
+const Middleware = require('../middleware/interests');
 
 // controller imports
 const interestController = require('../controllers/interestController');
