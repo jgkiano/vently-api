@@ -1,21 +1,44 @@
-const Event     = require('../models/event');
-const ErrorMsgs = require('../error-msgs/interests');
 const moment    = require('moment');
 const axios     = require('axios');
+const Event     = require('../models/event');
+const ErrorMsgs = require('../error-msgs/interests');
 const Keys      = require('../config/keys.js');
 
-const initialOrigin = [ -1.3106273, 36.8238471];
 const eventController = {};
 
 eventController.getAll = (req, res) => {
     Event.find({isDeleted: false})
     .where('date').gte(Date.now())
-    .where('interest').in(["59382166f34ef92b142938d6"])
+    // .where('interest').in(["59382166f34ef92b142938d6"])
     .then((events) => {
-        res.status(200).json({
-            success: true,
-            events
-        });
+        if(!req.query.lat || !req.query.lng) {
+            res.status(200).json({
+                success: true,
+                events
+            });
+        } else {
+            const origin = [req.query.lat, req.query.lng];
+            let closeEvents = [];
+            events.forEach((event, index, array) => {
+                const dest = [event.location[0], event.location[1]];
+                const link = getDistanceMatrix(origin, dest);
+                axios.get(link).then((response) => {
+                    if(response.data.rows[0].elements[0].distance.value < 6000) {
+                        closeEvents.push(event);
+                    }
+                    if(index == array.length -1) {
+                        res.status(200).json({
+                            success: true,
+                            events: closeEvents
+                        });
+                    }
+                }).catch((error) => {
+                    res.status(500).json({
+                        message: error.toString()
+                    });
+                });
+            });
+        }
     }).catch((error) => {
         res.status(500).json({
             message: ErrorMsgs.catchError
