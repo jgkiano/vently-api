@@ -8,7 +8,10 @@ const initialOrigin = [ -1.3106273, 36.8238471];
 const eventController = {};
 
 eventController.getAll = (req, res) => {
-    Event.find({isDeleted: false}).then((events) => {
+    Event.find({isDeleted: false})
+    .where('date').gte(Date.now())
+    .where('interest').in(["59382166f34ef92b142938d6"])
+    .then((events) => {
         res.status(200).json({
             success: true,
             events
@@ -39,7 +42,7 @@ eventController.getSingle = (req, res) => {
 
         if (diff >= 0 && diff <= 5) {
             //get weather
-            getWeatherInfo(res, req, event)
+            getWeatherInfo(res, req, day, event)
         } else {
             //get phy address
             getPhyAddress(res, req, event);
@@ -51,7 +54,7 @@ eventController.getSingle = (req, res) => {
     });
 }
 
-function getWeatherInfo(res, req, event) {
+function getWeatherInfo(res, req, day, event) {
     axios.get(getWeatherLink(event.location[0], event.location[1]))
     .then((response) => {
         event.weather = response.data.list[day].weather[0];
