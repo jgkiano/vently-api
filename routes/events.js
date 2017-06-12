@@ -2,6 +2,8 @@ const express   = require('express');
 const passport  = require('passport');
 const routes    = express();
 const Event     = require('../models/event');
+const Middleware = require('../middleware/events');
+
 
 // const Middleware = require('../middleware/events');
 
@@ -16,7 +18,7 @@ routes.get('/', eventController.getAll);
 routes.get('/:id', eventController.getSingle);
 
 //add single event
-routes.post('/', eventController.addSingle);
+routes.post('/', Middleware.validateEvent, eventController.addSingle);
 
 //update single interest
 routes.put('/:id', eventController.updateSingle);

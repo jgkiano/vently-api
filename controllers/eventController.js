@@ -20,29 +20,7 @@ eventController.getAll = (req, res) => {
                 events
             });
         } else {
-            const origin = [req.query.lat, req.query.lng];
-            let closeEvents = [];
-            events.forEach((event, index, array) => {
-                const dest = [event.location[0], event.location[1]];
-                const link = getDistanceMatrix(origin, dest);
-                axios.get(link).then((response) => {
-                    if(response.data.rows[0].elements[0].distance.value < 6000) {
-                        event.distance = response.data.rows[0].elements[0].distance.text;
-                        event.duration = response.data.rows[0].elements[0].duration.text;
-                        closeEvents.push(event);
-                    }
-                    if(index == array.length -1) {
-                        res.status(200).json({
-                            success: true,
-                            events: closeEvents
-                        });
-                    }
-                }).catch((error) => {
-                    res.status(500).json({
-                        message: error.toString()
-                    });
-                });
-            });
+            getNearEvents(req, res, events);
         }
     }).catch((error) => {
         res.status(500).json({
@@ -77,21 +55,23 @@ eventController.getSingle = (req, res) => {
         }
     }).catch((error) => {
         res.status(500).json({
-            message: error.toString()
+            message: 'Event not found'
         });
     });
 }
 
 eventController.addSingle = (req, res) => {
-    const name          = req.body.name;
-    const date          = req.body.date;
-    const location      = req.body.location;
-    const description   = req.body.description;
-    const banner        = req.body.banner;
-    const price         = req.body.price;
-    const interest      = req.body.interest;
-
-    const event = new Event({ name, date, location, description, banner, price, interest });
+    const {
+        name,
+        date,
+        location,
+        locationDescription,
+        description,
+        banner,
+        price,
+        interest
+    } = req.body;
+    const event = new Event({ name, date, location, locationDescription, description, banner, price, interest });
     event.save().then((event) => {
         res.status(200).json({
             success: true,
@@ -106,13 +86,14 @@ eventController.addSingle = (req, res) => {
 
 eventController.updateSingle = (req, res) => {
     const data = {
-        name            : req.body.name,
-        date            : req.body.date,
-        location        : req.body.location,
-        description     : req.body.description,
-        banner          : req.body.banner,
-        price           : req.body.price,
-        interest        : req.body.interest
+        name                : req.body.name,
+        date                : req.body.date,
+        location            : req.body.location,
+        locationDescription : req.body.locationDescription,
+        description         : req.body.description,
+        banner              : req.body.banner,
+        price               : req.body.price,
+        interest            : req.body.interest
     };
     Event.findByIdAndUpdate(req.params.id, data, { new: true }).then((event) => {
         res.status(200).json({
@@ -148,6 +129,32 @@ eventController.deleteAll = (req, res) => {
     }).catch((error) => {
         res.status(500).json({
             message: "error on killswitch"
+        });
+    });
+}
+
+function getNearEvents(req, res, events) {
+    const origin = [req.query.lat, req.query.lng];
+    let closeEvents = [];
+    events.forEach((event, index, array) => {
+        const dest = [event.location[0], event.location[1]];
+        const link = getDistanceMatrix(origin, dest);
+        axios.get(link).then((response) => {
+            if(response.data.rows[0].elements[0].distance.value < 6000) {
+                event.distance = response.data.rows[0].elements[0].distance.text;
+                event.duration = response.data.rows[0].elements[0].duration.text;
+                closeEvents.push(event);
+            }
+            if(index == array.length -1) {
+                res.status(200).json({
+                    success: true,
+                    events: closeEvents
+                });
+            }
+        }).catch((error) => {
+            res.status(500).json({
+                message: error.toString()
+            });
         });
     });
 }
@@ -192,8 +199,8 @@ function getPhyAddress(res, req, event) {
 
 function formatEvent (event) {
     event = event.toObject();
-    event.date = moment(event.date).format('MMMM Do YYYY, h:mm:ss a');
-    event.createdAt = moment(event.createdAt).format('MMMM Do YYYY, h:mm:ss a');
+    event.date = moment(event.date).format('MMMM Do YYYY, h:mm a');
+    event.createdAt = moment(event.createdAt).format('MMMM Do YYYY, h:mm a');
     delete event['__v'];
     delete event['isDeleted'];
     delete event.interest['__v'];
