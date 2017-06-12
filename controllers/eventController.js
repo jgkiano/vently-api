@@ -11,6 +11,9 @@ eventController.getAll = (req, res) => {
     .where('date').gte(Date.now())
     // .where('interest').in(["59382166f34ef92b142938d6"])
     .then((events) => {
+        events.forEach((event, index) => {
+            events[index] = formatEvent(event);
+        })
         if(!req.query.lat || !req.query.lng) {
             res.status(200).json({
                 success: true,
@@ -24,6 +27,8 @@ eventController.getAll = (req, res) => {
                 const link = getDistanceMatrix(origin, dest);
                 axios.get(link).then((response) => {
                     if(response.data.rows[0].elements[0].distance.value < 6000) {
+                        event.distance = response.data.rows[0].elements[0].distance.text;
+                        event.duration = response.data.rows[0].elements[0].duration.text;
                         closeEvents.push(event);
                     }
                     if(index == array.length -1) {
@@ -77,10 +82,80 @@ eventController.getSingle = (req, res) => {
     });
 }
 
+eventController.addSingle = (req, res) => {
+    const name          = req.body.name;
+    const date          = req.body.date;
+    const location      = req.body.location;
+    const description   = req.body.description;
+    const banner        = req.body.banner;
+    const price         = req.body.price;
+    const interest      = req.body.interest;
+
+    const event = new Event({ name, date, location, description, banner, price, interest });
+    event.save().then((event) => {
+        res.status(200).json({
+            success: true,
+            event
+        });
+    }).catch((error) => {
+        res.status(500).json({
+            error: error.toString()
+        });
+    });
+}
+
+eventController.updateSingle = (req, res) => {
+    const data = {
+        name            : req.body.name,
+        date            : req.body.date,
+        location        : req.body.location,
+        description     : req.body.description,
+        banner          : req.body.banner,
+        price           : req.body.price,
+        interest        : req.body.interest
+    };
+    Event.findByIdAndUpdate(req.params.id, data, { new: true }).then((event) => {
+        res.status(200).json({
+            success: true,
+            event: formatEvent(event)
+        });
+    }).catch((error) => {
+        res.status(500).json({
+            error: error.toString()
+        });
+    })
+}
+
+eventController.deleteSingle = (req, res) => {
+    Event.findByIdAndUpdate(req.params.id, {isDeleted: true}, {new: true}).then((event) => {
+        res.status(200).json({
+            success: true
+        });
+    }).catch((error) => {
+        res.status(500).json({
+            error: ErrorMsgs.catchError
+        });
+    });
+}
+
+eventController.deleteAll = (req, res) => {
+    Event.remove({}).then((data) => {
+        res.status(200).json({
+            success: true,
+            message: 'removed all',
+            data
+        });
+    }).catch((error) => {
+        res.status(500).json({
+            message: "error on killswitch"
+        });
+    });
+}
+
 function getWeatherInfo(res, req, day, event) {
     axios.get(getWeatherLink(event.location[0], event.location[1]))
     .then((response) => {
-        event.weather = response.data.list[day].weather[0];
+        event.weather = parseWeatherResponse(response, day);
         getPhyAddress(res, req, event);
     }).catch((error) => {
         res.status(500).json({
@@ -94,9 +169,13 @@ function getPhyAddress(res, req, event) {
     if(!req.query.lat || !req.query.lng) {
         const link = getGeoCodeLink(event.location[0], event.location[1]);
         axios.get(link).then( (response) => {
-            event.physicalAddress = response.data.results[0].formatted_address
+            event.physicalAddress = parseGeoCodeResponse(response);
             res.status(200).json({ success: true, event });
-        }).catch((error) => { console.log(error); });
+        }).catch((error) => {
+            res.status(500).json({
+                message: error.toString()
+            });
+        });
     } else {
         //get all yummy / creepy distance infomation
         const origin = [req.query.lat, req.query.lng];
@@ -133,6 +212,14 @@ function getWeatherLink(lat, lon) {
 
 function getDistanceMatrix(origin, dest) {
     return 'https://maps.googleapis.com/maps/api/distancematrix/json?origins='+origin[0]+','+origin[1]+'&destinations='+dest[0]+','+dest[1]+'&key='+Keys.distanceMatrixKey+'';
+}
+
+function parseWeatherResponse(response, day) {
+    return response.data.list[day].weather[0];
+}
+
+function parseGeoCodeResponse(response) {
+    return response.data.results[0].formatted_address;
 }
 
 module.exports = eventController;

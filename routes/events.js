@@ -9,23 +9,23 @@ const Event     = require('../models/event');
 // controller imports
 const eventController = require('../controllers/eventController');
 
-// get all users - temporary
+// get all events - temporary
 routes.get('/', eventController.getAll);
 
-//get single interest
+//get single event
 routes.get('/:id', eventController.getSingle);
 
-//update single interest
-// routes.put('/:id', Middleware.validateInterest, eventController.updateSingle);
+//add single event
+routes.post('/', eventController.addSingle);
 
-//add single interest
-// routes.post('/', Middleware.validateInterest, eventController.addSingle);
+//update single interest
+routes.put('/:id', eventController.updateSingle);
 
 //soft delete single interest
-// routes.delete('/:id', eventController.deleteSingle);
+routes.delete('/:id', eventController.deleteSingle);
 
 //temporary kill switch
-// routes.delete('/', eventController.deleteAll);
+routes.delete('/', eventController.deleteAll);
 
 module.exports = routes;
 
@@ -36,25 +36,7 @@ module.exports = routes;
 // });
 //
 routes.post('/', (req, res) => {
-    const name          = req.body.name;
-    const date          = req.body.date;
-    const location      = req.body.location;
-    const description   = req.body.description;
-    const banner        = req.body.banner;
-    const price         = req.body.price;
-    const interest      = req.body.interest;
 
-    const event = new Event({ name, date, location, description, banner, price, interest });
-    event.save().then((event) => {
-        res.status(200).json({
-            success: true,
-            event
-        });
-    }).catch((error) => {
-        res.status(500).json({
-            error: error.toString()
-        });
-    });
 });
 
 

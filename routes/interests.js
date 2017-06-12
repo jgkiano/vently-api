@@ -6,7 +6,7 @@ const Middleware = require('../middleware/interests');
 // controller imports
 const interestController = require('../controllers/interestController');
 
-// get all users - temporary
+// get all interests - temporary
 routes.get('/', interestController.getAll);
 
 //get single interest
