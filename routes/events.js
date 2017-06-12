@@ -21,7 +21,7 @@ routes.get('/:id', eventController.getSingle);
 routes.post('/', Middleware.validateEvent, eventController.addSingle);
 
 //update single interest
-routes.put('/:id', eventController.updateSingle);
+routes.put('/:id', Middleware.validateEvent, eventController.updateSingle);
 
 //soft delete single interest
 routes.delete('/:id', eventController.deleteSingle);

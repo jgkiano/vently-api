@@ -1,7 +1,8 @@
 const moment    = require('moment');
 const axios     = require('axios');
 const Event     = require('../models/event');
-const ErrorMsgs = require('../error-msgs/interests');
+const Manager   = require('../models/manager');
+const ErrorMsgs = require('../error-msgs/events');
 const Keys      = require('../config/keys.js');
 
 const eventController = {};
@@ -30,10 +31,11 @@ eventController.getAll = (req, res) => {
 }
 
 eventController.getSingle = (req, res) => {
-    Event.findById(req.params.id).populate('interest').then((event) => {
+    Event.findById(req.params.id).populate('interest')
+        .populate('manager').then((event) => {
         if(!event) {
             res.status(500).json({
-                message: 'Event not found'
+                message: ErrorMsgs.eventNot
             });
             return;
         }
@@ -55,7 +57,7 @@ eventController.getSingle = (req, res) => {
         }
     }).catch((error) => {
         res.status(500).json({
-            message: 'Event not found'
+            message: ErrorMsgs.eventNot
         });
     });
 }
@@ -69,16 +71,19 @@ eventController.addSingle = (req, res) => {
         description,
         banner,
         price,
-        interest
+        interest,
+        manager
     } = req.body;
-    const event = new Event({ name, date, location, locationDescription, description, banner, price, interest });
+    const event = new Event({ name, date, location, locationDescription, description, banner, price, interest, manager });
     event.save().then((event) => {
+        updateManagerEvent(event);
         res.status(200).json({
             success: true,
             event
         });
     }).catch((error) => {
         res.status(500).json({
+            message: ErrorMsgs.catchError,
             error: error.toString()
         });
     });
@@ -102,25 +107,27 @@ eventController.updateSingle = (req, res) => {
         });
     }).catch((error) => {
         res.status(500).json({
-            error: error.toString()
+            message: ErrorMsgs.catchError
         });
     })
 }
 
 eventController.deleteSingle = (req, res) => {
     Event.findByIdAndUpdate(req.params.id, {isDeleted: true}, {new: true}).then((event) => {
+        deleteManagerEvent(event)
         res.status(200).json({
             success: true
         });
     }).catch((error) => {
         res.status(500).json({
-            error: ErrorMsgs.catchError
+            message: ErrorMsgs.catchError
         });
     });
 }
 
 eventController.deleteAll = (req, res) => {
     Event.remove({}).then((data) => {
+        deleteAllManagerEvents();
         res.status(200).json({
             success: true,
             message: 'removed all',
@@ -128,9 +135,30 @@ eventController.deleteAll = (req, res) => {
         });
     }).catch((error) => {
         res.status(500).json({
-            message: "error on killswitch"
+            message: "error on killswitch",
+            error: error.toString()
         });
     });
+}
+
+function updateManagerEvent(event) {
+    Manager.findByIdAndUpdate(event.manager, { $push: { events: event._id } }, {new: true}).then((manager) => {
+        console.log(manager)
+    }).catch((error) => {
+        console.log(error)
+    });
+}
+
+function deleteManagerEvent(event) {
+    Manager.findByIdAndUpdate(event.manager, { $pop: { events: event._id } }, {new: true}).then((manager) => {
+        console.log(manager)
+    }).catch((error) => {
+        console.log(error)
+    });
+}
+//temporary
+function deleteAllManagerEvents() {
+    Manager.where({ }).update({ $set: { events: [] }}).exec();
 }
 
 function getNearEvents(req, res, events) {

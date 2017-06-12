@@ -13,4 +13,8 @@ routes.use('/interests', interestsRoute);
 const eventsRoute    = require('./events');
 routes.use('/events', eventsRoute);
 
+//event managers route
+const managersRoute    = require('./managers');
+routes.use('/managers', managersRoute);
+
 module.exports = routes;

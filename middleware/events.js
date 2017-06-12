@@ -1,7 +1,8 @@
 const moment = require('moment');
 const Event      = require('../models/event');
-const ErrorMsgs     = require('../error-msgs/interests');
+const ErrorMsgs     = require('../error-msgs/events');
 const Interest      = require('../models/interest');
+const Manager      = require('../models/manager');
 
 const Middleware    = {};
 
@@ -9,12 +10,12 @@ const dateFormat = "YYYY-M-D H:m";
 const region = 'Kenya/Nairobi';
 
 Middleware.validateEvent = (req, res, next) => {
-    const { name, date, location, locationDescription, description, banner, interest } = req.body;
+    const { name, date, location, locationDescription, description, banner, interest, manager } = req.body;
     const errors = [];
 
     if(!name) {
         errors.push({
-            name: 'Event name is required'
+            name: ErrorMsgs.nameReq
         });
     }
 
@@ -24,7 +25,7 @@ Middleware.validateEvent = (req, res, next) => {
 
     if(diff <= 5) {
         errors.push({
-            date: 'Event must be atleast 6 days from today'
+            date: ErrorMsgs.dateReq
         });
     } else {
         req.body.date = moment(date).utc().format();
@@ -32,31 +33,37 @@ Middleware.validateEvent = (req, res, next) => {
 
     if (!validateCoordinates(location)) {
         errors.push({
-            location: 'Location is not valid'
+            location: ErrorMsgs.locReq
         });
     }
 
     if(!locationDescription) {
         errors.push({
-            locationDescription: 'Location description is required'
+            locationDescription: ErrorMsgs.locDescReq
         });
     }
 
     if(!description) {
         errors.push({
-            description: 'Event description is required'
+            description: ErrorMsgs.descReq
         });
     }
 
     if(!banner) {
         errors.push({
-            banner: 'Banner url required'
+            banner: ErrorMsgs.bannerReq
         });
     }
 
     if(!isValidObjectId(interest)) {
         errors.push({
-            interest: 'Provide a valid interest for your event'
+            interest: ErrorMsgs.interestReq
+        });
+    }
+
+    if(!isValidObjectId(manager)) {
+        errors.push({
+            manager: ErrorMsgs.managerReq
         });
     }
 
@@ -70,14 +77,26 @@ Middleware.validateEvent = (req, res, next) => {
     Interest.findById(interest).then((interest) => {
         if (!interest) {
             errors.push({
-                interest: 'Provide a valid interest for your event'
+                interest: ErrorMsgs.interestReq
             });
             res.status(500).json({
                 message: errors
             });
             return;
         }
-        next();
+        return Manager.findById(manager);
+    }).then((manager) => {
+        if(manager) {
+            next();
+        } else {
+            errors.push({
+                interest: ErrorMsgs.managerReq
+            });
+            res.status(500).json({
+                message: errors
+            });
+            return;
+        }
     }).catch((error) => {
         res.status(500).json({
             message: error
@@ -87,8 +106,12 @@ Middleware.validateEvent = (req, res, next) => {
 };
 
 function validateCoordinates(location) {
-    if(location.constructor == Array && location.length == 2) {
-        return true;
+    if(location) {
+        if(location.constructor == Array && location.length == 2) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }

@@ -36,6 +36,10 @@ const eventSchema = new Schema({
         type : mongoose.Schema.Types.ObjectId, ref: 'Interest',
         required: true
     },
+    manager: {
+        type : mongoose.Schema.Types.ObjectId, ref: 'Manager',
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
