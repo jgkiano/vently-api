@@ -135,8 +135,7 @@ eventController.deleteAll = (req, res) => {
         });
     }).catch((error) => {
         res.status(500).json({
-            message: "error on killswitch",
-            error: error.toString()
+            message: "error on killswitch"
         });
     });
 }
