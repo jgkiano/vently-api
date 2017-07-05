@@ -9,8 +9,10 @@ const Middleware    = {};
 const dateFormat = "YYYY-M-D H:m";
 const region = 'Kenya/Nairobi';
 
+const MINIMUM_DATE_DIFF = 5;
+
 Middleware.validateEvent = (req, res, next) => {
-    const { name, date, location, locationDescription, description, banner, interest, manager } = req.body;
+    const { name, dateFrom, dateTo, location, locationDescription, description, banner, interest, manager } = req.body;
     const errors = [];
 
     if(!name) {
@@ -19,16 +21,17 @@ Middleware.validateEvent = (req, res, next) => {
         });
     }
 
-    const eventDate = moment(date);
+    const eventDate = moment(dateFrom);
     const currentDate = moment(Date.now());
     const diff = eventDate.diff(currentDate,'days');
 
-    if(diff <= 5) {
+    if(diff <= MINIMUM_DATE_DIFF) {
         errors.push({
             date: ErrorMsgs.dateReq
         });
     } else {
-        req.body.date = moment(date).utc().format();
+        req.body.dateFrom = moment(dateFrom).utc().format();
+        req.body.dateTo = moment(dateTo).utc().format();
     }
 
     if (!validateCoordinates(location)) {

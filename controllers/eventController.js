@@ -9,9 +9,10 @@ const eventController = {};
 
 eventController.getAll = (req, res) => {
     Event.find({isDeleted: false})
-    .where('date').gte(Date.now())
-    // .where('interest').in(["59382166f34ef92b142938d6"])
+    .where('dateFrom').gte(Date.now())
+    .where('interest').in(req.user.interests)
     .then((events) => {
+        console.log(events)
         events.forEach((event, index) => {
             events[index] = formatEvent(event);
         })
@@ -65,7 +66,8 @@ eventController.getSingle = (req, res) => {
 eventController.addSingle = (req, res) => {
     const {
         name,
-        date,
+        dateFrom,
+        dateTo,
         location,
         locationDescription,
         description,
@@ -74,7 +76,7 @@ eventController.addSingle = (req, res) => {
         interest,
         manager
     } = req.body;
-    const event = new Event({ name, date, location, locationDescription, description, banner, price, interest, manager });
+    const event = new Event({ name, dateFrom, dateTo, location, locationDescription, description, banner, price, interest, manager });
     event.save().then((event) => {
         updateManagerEvent(event);
         res.status(200).json({
@@ -226,7 +228,6 @@ function getPhyAddress(res, req, event) {
 
 function formatEvent (event) {
     event = event.toObject();
-    event.date = moment(event.date).format('MMMM Do YYYY, h:mm a');
     event.createdAt = moment(event.createdAt).format('MMMM Do YYYY, h:mm a');
     delete event['__v'];
     delete event['isDeleted'];

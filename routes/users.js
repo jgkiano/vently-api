@@ -14,6 +14,9 @@ routes.get('/all', userController.getAll);
 // get single user info
 routes.get('/', passport.authenticate('jwt',{session: false}), userController.getSingle);
 
+// get users tickets
+routes.get('/tickets', passport.authenticate('jwt',{session: false}), userController.getTickets);
+
 // register a single user
 routes.post('/', Middleware.validateRegistration, userController.addSingle);
 
@@ -23,6 +26,7 @@ routes.post('/authenticate', Middleware.validateAuthentication, userController.a
 // update only firstname and lastname
 routes.put('/', passport.authenticate('jwt',{session: false}), Middleware.validateBasicInfo, userController.updateSingle);
 
+routes.put('/interests', passport.authenticate('jwt',{session: false}), userController.updateInterests);
 // update only email
 routes.put('/email', passport.authenticate('jwt',{session: false}), Middleware.validateEmail, userController.updateSingleEmail);
 

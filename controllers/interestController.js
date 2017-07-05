@@ -39,7 +39,8 @@ interestController.getSingle = (req, res) => {
 
 interestController.addSingle = (req, res) => {
     const name = req.body.name;
-    const interest = new Interest({ name });
+    const icon = req.body.icon;
+    const interest = new Interest({ name, icon });
     interest.save().then((interest) => {
         res.status(200).json({
             success: true,

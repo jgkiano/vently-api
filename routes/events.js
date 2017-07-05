@@ -11,8 +11,8 @@ const Middleware = require('../middleware/events');
 // controller imports
 const eventController = require('../controllers/eventController');
 
-// get all events - temporary
-routes.get('/', eventController.getAll);
+// get all events
+routes.get('/', passport.authenticate('jwt',{session: false}), eventController.getAll);
 
 //get single event
 routes.get('/:id', eventController.getSingle);

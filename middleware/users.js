@@ -225,7 +225,7 @@ function validatePhone(phone) {
 }
 
 function validatePassword(password) {
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const passwordPattern = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
     return passwordPattern.test(password);
 }
 

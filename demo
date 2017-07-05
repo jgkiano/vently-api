@@ -1,0 +1,42 @@
+REMEMBER TO CHANGE PAY IP
+
+register user
+
+{
+	"email":"jamesM@gmail.com",
+	"password":"P@ssw0rd@123",
+	"firstname":"James",
+	"lastname":"Mwangi",
+	"phone": 722365478,
+	"gender":"male",
+	"interests": ["5938216af34ef92b142938d7","59382166f34ef92b142938d6"]
+}
+
+authenticate
+
+{
+	"email":"kilua@gmail.com",
+    "password":"Godrick@93"
+}
+
+use token to get user protect user routes
+->GET: http://localhost:3000/api/users
+
+
+///////->interests route<-////////
+
+create via post
+{
+    "name":"Spirituality & Religion"
+}
+
+get localhost:3000/api/interests/
+put localhost:3000/api/interests/:id
+
+///////->events route<-////////
+
+http://localhost:3000/api/events/5952491bedf32534ba0c8627?lat=-1.307029&lng=36.838707
+
+http://localhost:3000/api/events?lat=-1.307029&lng=36.838707
+
+http://localhost:3000/api/events?lat=-1.285748&lng=36.876816

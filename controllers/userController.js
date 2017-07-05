@@ -2,6 +2,7 @@ const jwt           = require('jsonwebtoken');
 const crypt         = require('bcryptjs');
 const config        = require('../config/database');
 const User          = require('../models/user');
+const Ticket        = require('../models/ticket');
 const ErrorMsgs     = require('../error-msgs/users');
 
 const userController = {};
@@ -102,6 +103,21 @@ userController.updateSingle = (req, res) => {
         lastname
     }
     User.findByIdAndUpdate(req.user._id, data, {new: true}).then((user) => {
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    })
+    .catch((error) => {
+        res.status(500).json({
+            message: ErrorMsgs.updateFail
+        });
+    });
+}
+
+userController.updateInterests = (req, res) => {
+    const data = req.body.interests;
+    User.findByIdAndUpdate(req.user._id, {interests: data}, {new: true}).then((user) => {
         res.status(200).json({
             success: true,
             data: user
@@ -246,6 +262,10 @@ userController.authenticateSingle = (req, res) => {
             message: ErrorMsgs.loginFail
         });
     });
+}
+
+userController.getTickets = (req, res) => {
+    res.send('found');
 }
 
 module.exports = userController;

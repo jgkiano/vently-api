@@ -9,6 +9,10 @@ const interestSchema = new Schema({
         type: String,
         required: true
     },
+    icon: {
+        type: String,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

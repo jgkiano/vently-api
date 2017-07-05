@@ -17,4 +17,12 @@ routes.use('/events', eventsRoute);
 const managersRoute    = require('./managers');
 routes.use('/managers', managersRoute);
 
+//payment routes
+const payRoute    = require('./pay');
+routes.use('/pay', payRoute);
+
+//ticket routes
+const ticketsRoute = require('./tickets');
+routes.use('/tickets', ticketsRoute);
+
 module.exports = routes;

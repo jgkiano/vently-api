@@ -16,6 +16,8 @@ mongoose.connect(config.database, {}, function(error) {
 
 const app = express();
 
+app.use(express.static(__dirname + '/public'));
+
 //parse application/json
 app.use(bodyParser.json());
 //parse application/x-www-form-urlencoded

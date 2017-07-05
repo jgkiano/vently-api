@@ -9,6 +9,12 @@ Middleware.validateInterest = (req, res, next) => {
         });
         return;
     }
+    if(!req.body.icon) {
+        res.status(500).json({
+            message: 'Icon is required'
+        });
+        return;
+    }
     req.body.name = toTitleCase(req.body.name.toString())
     next();
 }
