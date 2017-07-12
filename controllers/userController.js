@@ -1,9 +1,11 @@
 const jwt           = require('jsonwebtoken');
 const crypt         = require('bcryptjs');
+const _             = require('lodash');
 const config        = require('../config/database');
 const User          = require('../models/user');
 const Ticket        = require('../models/ticket');
 const ErrorMsgs     = require('../error-msgs/users');
+
 
 const userController = {};
 
@@ -76,12 +78,17 @@ userController.addSingle = (req, res) => {
                     interests
                 });
                 user.save().then((newUser) => {
+                    const token = jwt.sign(newUser, config.secret, {
+                        // expiresIn: 604800 //one week
+                    });
                     newUser = newUser.toObject();
                     delete newUser['password'];
                     delete newUser['__v'];
+                    //generate token
                     res.status(200).json({
                         success: true,
-                        data: newUser
+                        data: newUser,
+                        token: 'JWT ' + token,
                     });
                 })
                 .catch((error) => {
@@ -98,11 +105,16 @@ userController.addSingle = (req, res) => {
 userController.updateSingle = (req, res) => {
     const firstname = req.body.firstname;
     const lastname  = req.body.lastname;
+    const email  = req.body.email;
+    const phone  = req.body.phone;
     const data = {
         firstname,
-        lastname
+        lastname,
+        email,
+        phone
     }
     User.findByIdAndUpdate(req.user._id, data, {new: true}).then((user) => {
+        console.log("save successful");
         res.status(200).json({
             success: true,
             data: user
@@ -265,7 +277,36 @@ userController.authenticateSingle = (req, res) => {
 }
 
 userController.getTickets = (req, res) => {
-    res.send('found');
+    Ticket.find({currentOwner: req.user._id})
+    .populate('eventId')
+    .then((tickets) => {
+
+        const count = _.countBy(tickets, (ticket) => {
+            return ticket.eventId._id;
+        });
+
+        uniqTickets = _.uniqBy(tickets, (ticket) => {
+            return ticket.eventId._id;
+        });
+
+        const events = uniqTickets.reduce((acc, ticket) => {
+
+            const event = {
+                eventId: ticket.eventId._id,
+                name: ticket.eventId.name,
+                dateFrom: ticket.eventId.dateFrom,
+                totalTickets: count[ticket.eventId._id],
+                singleTicketId:  ticket._id
+            }
+            acc.push(event);
+            return acc;
+        },[]);
+
+        res.status(200).json({
+            success: true,
+            data: events,
+        });
+    });
 }
 
 module.exports = userController;

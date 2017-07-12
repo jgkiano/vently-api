@@ -8,27 +8,38 @@ const Keys      = require('../config/keys.js');
 const eventController = {};
 
 eventController.getAll = (req, res) => {
-    Event.find({isDeleted: false})
-    .where('dateFrom').gte(Date.now())
-    .where('interest').in(req.user.interests)
-    .then((events) => {
-        console.log(events)
-        events.forEach((event, index) => {
-            events[index] = formatEvent(event);
+
+    if(req.query.lat && req.query.lng) {
+        Event.find({isDeleted: false})
+        .where('dateFrom').gte(Date.now())
+        .populate('interest')
+        .then((events) => {
+            getNearEvents(req, res, events)
         })
-        if(!req.query.lat || !req.query.lng) {
+        .catch((error) => {
+            res.status(500).json({
+                message: ErrorMsgs.catchError
+            });
+        });
+    } else {
+        Event.find({isDeleted: false})
+        .where('dateFrom').gte(Date.now())
+        .where('interest').in(req.user.interests)
+        .then((events) => {
+            events.forEach((event, index) => {
+                events[index] = formatEvent(event);
+            });
             res.status(200).json({
                 success: true,
                 events
             });
-        } else {
-            getNearEvents(req, res, events);
-        }
-    }).catch((error) => {
-        res.status(500).json({
-            message: ErrorMsgs.catchError
+        })
+        .catch((error) => {
+            res.status(500).json({
+                message: ErrorMsgs.catchError
+            });
         });
-    });
+    }
 }
 
 eventController.getSingle = (req, res) => {
@@ -163,13 +174,15 @@ function deleteAllManagerEvents() {
 }
 
 function getNearEvents(req, res, events) {
+    console.log("called");
     const origin = [req.query.lat, req.query.lng];
     let closeEvents = [];
     events.forEach((event, index, array) => {
         const dest = [event.location[0], event.location[1]];
         const link = getDistanceMatrix(origin, dest);
         axios.get(link).then((response) => {
-            if(response.data.rows[0].elements[0].distance.value < 6000) {
+            console.log(response.data.rows[0].elements[0].distance.value,"<<",event.name)
+            if(response.data.rows[0].elements[0].distance.value <= 6000) {
                 event.distance = response.data.rows[0].elements[0].distance.text;
                 event.duration = response.data.rows[0].elements[0].duration.text;
                 closeEvents.push(event);

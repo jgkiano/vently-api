@@ -19,11 +19,13 @@ const transactionSchema = new Schema({
     },
     transactionPaymentMethod: {
         type: String,
-        required: true
+        required: true,
+        default: 'N/A'
     },
     status: {
         type: String,
-        required: true
+        required: true,
+        default: 'placed'
     },
     userId: {
         type: String,
