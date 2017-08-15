@@ -25,6 +25,7 @@ eventController.getAll = (req, res) => {
         Event.find({isDeleted: false})
         .where('dateFrom').gte(Date.now())
         .where('interest').in(req.user.interests)
+        .sort({dateFrom: 'asc'})
         .then((events) => {
             events.forEach((event, index) => {
                 events[index] = formatEvent(event);
@@ -177,26 +178,26 @@ function getNearEvents(req, res, events) {
     console.log("called");
     const origin = [req.query.lat, req.query.lng];
     let closeEvents = [];
+
     events.forEach((event, index, array) => {
         const dest = [event.location[0], event.location[1]];
         const link = getDistanceMatrix(origin, dest);
         axios.get(link).then((response) => {
-            console.log(response.data.rows[0].elements[0].distance.value,"<<",event.name)
-            if(response.data.rows[0].elements[0].distance.value <= 6000) {
-                event.distance = response.data.rows[0].elements[0].distance.text;
-                event.duration = response.data.rows[0].elements[0].duration.text;
-                closeEvents.push(event);
-            }
-            if(index == array.length -1) {
-                res.status(200).json({
-                    success: true,
-                    events: closeEvents
-                });
+            if(response.data.rows[0].elements[0].distance) {
+                if(response.data.rows[0].elements[0].distance.value <= 10000) {
+                    event.distance = response.data.rows[0].elements[0].distance.text;
+                    event.duration = response.data.rows[0].elements[0].duration.text;
+                    closeEvents.push(event);
+                }
+                if(index == array.length -1) {
+                    res.status(200).json({
+                        success: true,
+                        events: closeEvents
+                    });
+                }
             }
         }).catch((error) => {
-            res.status(500).json({
-                message: error.toString()
-            });
+            console.log(error);
         });
     });
 }

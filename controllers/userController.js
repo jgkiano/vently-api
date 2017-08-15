@@ -24,7 +24,7 @@ userController.getAll = (req, res) => {
     });
 }
 
-//Get single user
+//Get single user from db
 userController.getSingle = (req, res) => {
     User.findById(req.user._id).populate('interests').then((user) => {
         if(user) {

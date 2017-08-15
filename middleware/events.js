@@ -25,14 +25,16 @@ Middleware.validateEvent = (req, res, next) => {
     const currentDate = moment(Date.now());
     const diff = eventDate.diff(currentDate,'days');
 
-    if(diff <= MINIMUM_DATE_DIFF) {
-        errors.push({
-            date: ErrorMsgs.dateReq
-        });
-    } else {
-        req.body.dateFrom = moment(dateFrom).utc().format();
-        req.body.dateTo = moment(dateTo).utc().format();
-    }
+    // if(diff <= MINIMUM_DATE_DIFF) {
+    // if(diff) {
+    //     errors.push({
+    //         date: ErrorMsgs.dateReq
+    //     });
+    // } else {
+    //
+    // }
+    req.body.dateFrom = moment(dateFrom).utc().format();
+    req.body.dateTo = moment(dateTo).utc().format();
 
     if (!validateCoordinates(location)) {
         errors.push({
